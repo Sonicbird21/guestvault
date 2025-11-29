@@ -1,6 +1,6 @@
 # guestvault
-<<<<<<< HEAD
-Guestvault - an anonymous file upload hosting service
+
+guestvault - an anonymous file upload hosting service
 =======
 
 guestvault is a simple Flask-based file host: upload files, view metadata (hashes, type, size, uploaded date), preview common formats, and download.
@@ -88,10 +88,7 @@ location / {
 
 ## Notes
 
-## Notes
-
 - Files are stored under `uploads/` in subfolders by SHA-256 prefix.
 - Metadata is stored in `data.db` (SQLite) at the project root.
 - Max upload size is 512 MB (configurable in `app.py`).
 - Supported previews: images, text, audio, video (browser dependent).
->>>>>>> a84c7e3 (initial guestvault import)
