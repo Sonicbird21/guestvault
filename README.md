@@ -88,5 +88,5 @@ location / {
 
 - Files are stored under `uploads/` in subfolders by SHA-256 prefix.
 - Metadata is stored in `data.db` (SQLite) at the project root.
-- Max upload size is 512 MB (configurable in `app.py`).
+- Max upload size defaults to 512 MB; override via `.env` with `MAX_CONTENT_LENGTH` (raw bytes or suffixed: e.g. `268435456`, `256MB`, `1GB`).
 - Supported previews: images, text, audio, video (browser dependent).

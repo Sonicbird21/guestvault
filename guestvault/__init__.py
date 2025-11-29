@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -24,7 +25,26 @@ def create_app() -> Flask:
     app = Flask(__name__, template_folder=str(base_dir / "templates"), static_folder=str(base_dir / "static"))
 
     # Core config
-    app.config.setdefault("MAX_CONTENT_LENGTH", 512 * 1024 * 1024)  # 512 MB
+    def _parse_size_env(val: str, default: int) -> int:
+        val = (val or "").strip()
+        if not val:
+            return default
+        # Allow raw integer bytes
+        try:
+            return int(val)
+        except ValueError:
+            pass
+        # Allow forms like 256MB, 1GB, 0.5GB
+        m = re.match(r"^(\d+(?:\.\d+)?)\s*([KMG]B)$", val.upper())
+        if m:
+            num = float(m.group(1))
+            unit = m.group(2)
+            mult = {"KB": 1024, "MB": 1024**2, "GB": 1024**3}[unit]
+            return int(num * mult)
+        logging.warning("Invalid MAX_CONTENT_LENGTH value '%s'; using default", val)
+        return default
+
+    app.config["MAX_CONTENT_LENGTH"] = _parse_size_env(os.environ.get("MAX_CONTENT_LENGTH"), 512 * 1024 * 1024)
     app.secret_key = os.environ.get("SECRET_KEY") or ""
     if not app.secret_key:
         raise RuntimeError("SECRET_KEY is required. Set it in .env")
