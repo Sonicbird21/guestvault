@@ -1,0 +1,4 @@
+-r requirements.txt
+gunicorn==21.2.0
+# Alternatively on Windows or if preferred
+waitress==2.1.2

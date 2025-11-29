@@ -1,0 +1,92 @@
+:root {
+  --bg: #0b0d11;
+  --card: #121620;
+  --text: #e6e8ef;
+  --muted: #9aa3b2;
+  --accent: #5aa9ff;
+  --accent-2: #8bc34a;
+  --border: #222635;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+  background: var(--bg);
+  color: var(--text);
+}
+
+.container { max-width: 980px; margin: 0 auto; padding: 24px; }
+header h1 { margin: 0 0 8px; }
+header a { color: var(--text); text-decoration: none; }
+header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+
+.table { width: 100%; display: grid; gap: 8px; overflow-x: auto; }
+.row { display: grid; grid-template-columns: 1.5fr 0.6fr 1fr 1.2fr 0.6fr; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--border); }
+.table.has-admin .row { grid-template-columns: 32px 1.5fr 0.6fr 1fr 1.2fr 0.6fr; }
+.row.header { font-weight: 600; color: var(--muted); border-bottom: 1px solid var(--border); }
+.row > div { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chk-col { display: flex; align-items: center; justify-content: center; }
+
+/* Custom checkbox */
+.chk { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; }
+.chk input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+.chk span { width: 18px; height: 18px; border-radius: 4px; border: 1px solid var(--border); background: #0e121a; display: inline-block; position: relative; }
+/* Checked state: accent background + visible tick */
+.chk input:checked + span { background: #10233a; border-color: var(--accent); box-shadow: 0 0 0 1px rgba(90,169,255,.35) inset; }
+.chk input:checked + span::after {
+  content: "";
+  position: absolute;
+  left: 50%; top: 50%;
+  width: 10px; height: 6px;
+  transform: translate(-50%, -65%) rotate(-45deg);
+  border-left: 2px solid var(--accent);
+  border-bottom: 2px solid var(--accent);
+}
+.chk input:focus + span { outline: 2px solid #2a4a70; outline-offset: 2px; }
+
+/* Slightly narrower first column when admin checkbox present */
+.row > div:first-child input[type="checkbox"] { transform: scale(1.1); }
+
+input[type="file"] {
+  padding: 8px; background: #0e121a; border: 1px solid var(--border); border-radius: 8px; color: var(--text);
+}
+
+.button, button { display: inline-block; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--accent); color: white; background: #10233a; text-decoration: none; cursor: pointer; }
+.button:hover, button:hover { filter: brightness(1.1); }
+.button.secondary { border-color: var(--accent-2); background: #113016; }
+.button.link { border-color: transparent; background: transparent; color: var(--accent); }
+.button.danger { border-color: #ef5350; background: #3a1010; }
+
+.muted { color: var(--muted); }
+.monospace { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.small { font-size: 0.9em; }
+.break { overflow-wrap: anywhere; word-break: break-word; }
+h2 { overflow-wrap: anywhere; }
+
+.meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.label { color: var(--muted); font-size: 0.85em; margin-bottom: 4px; }
+
+.actions { display: flex; gap: 8px; margin-top: 12px; }
+
+.preview { width: 100%; max-height: 70vh; border: 1px solid var(--border); border-radius: 8px; }
+.media { width: 100%; }
+
+footer { color: var(--muted); font-size: 0.9em; }
+
+/* Upload progress */
+.progress-container { margin-top: 14px; }
+.progress-bar { position: relative; width: 100%; height: 14px; background: #1b2330; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.progress-fill { position: absolute; top:0; left:0; height:100%; width:0%; background: linear-gradient(90deg, var(--accent), #7ac4ff); transition: width .15s ease; }
+.progress-stats { margin-top: 6px; font-size: 0.8rem; color: var(--muted); display: flex; flex-wrap: wrap; gap: 12px; }
+.progress-stats span { white-space: nowrap; }
+.uploading #uploadBtn { opacity: .6; pointer-events: none; }
+.uploading #fileInput { opacity: .6; pointer-events: none; }

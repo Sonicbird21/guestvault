@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block content %}
+  <section class="card">
+    <h2>Upload a File</h2>
+    <form id="uploadForm" action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data">
+      <input type="file" id="fileInput" name="file" required />
+      <div class="actions" style="margin-top:10px;">
+        <button type="submit" id="uploadBtn">Upload</button>
+        <button type="button" id="cancelBtn" class="button secondary" style="display:none;">Cancel</button>
+      </div>
+      <div id="progressContainer" class="progress-container" style="display:none;">
+        <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+        <div class="progress-stats" id="progressStats"></div>
+      </div>
+    </form>
+  </section>
+
+  <section class="card">
+    <h2>Files</h2>
+    {% if files|length == 0 %}
+      <p class="muted">No files uploaded yet.</p>
+    {% else %}
+      <form action="{{ url_for('bulk_delete') }}" method="post" id="bulkDeleteForm" data-confirm="Delete selected files? This cannot be undone.">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+        <div class="actions" style="justify-content: space-between;">
+          <div>
+            {% if is_admin %}
+              <button type="submit" class="button danger" id="bulkDeleteBtn" disabled>Delete Selected</button>
+            {% endif %}
+          </div>
+          <div class="muted small">
+            {% if is_admin %}
+              <label style="cursor:pointer"><input type="checkbox" id="selectAll" /> Select all</label>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="table{% if is_admin %} has-admin{% endif %}">
+          <div class="row header">
+            {% if is_admin %}<div class="chk-col">Sel</div>{% endif %}
+            <div>Name</div>
+            <div>Size</div>
+            <div>Uploaded</div>
+            <div>SHA-256</div>
+            <div>Downloads</div>
+          </div>
+          {% for f in files %}
+            <div class="row">
+              {% if is_admin %}
+                <div class="chk-col">
+                  <label class="chk">
+                    <input type="checkbox" name="ids" value="{{ f['id'] }}" class="rowChk" />
+                    <span></span>
+                  </label>
+                </div>
+              {% endif %}
+              <div>
+                <a href="{{ url_for('file_detail', file_id=f['id']) }}">{{ f['filename_original'] }}</a>
+              </div>
+              <div>{{ f['size'] | human_size }}</div>
+              <div><time datetime="{{ f['uploaded_at'] }}">{{ f['uploaded_at'] }}</time></div>
+              <div class="monospace small">{{ f['sha256'][:12] }}…</div>
+              <div>{{ f['download_count'] }}</div>
+            </div>
+          {% endfor %}
+        </div>
+      </form>
+    {% endif %}
+  </section>
+  <script src="{{ url_for('static', filename='upload.js') }}" defer></script>
+  <script src="{{ url_for('static', filename='bulk.js') }}" defer></script>
+{% endblock %}

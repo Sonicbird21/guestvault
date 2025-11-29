@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block content %}
+  <section class="card">
+    <h2>{{ file['filename_original'] }}</h2>
+    <div class="meta-grid">
+      <div>
+        <div class="label">Size</div>
+        <div>{{ file['size'] | human_size }}</div>
+      </div>
+      <div>
+        <div class="label">Uploaded</div>
+        <div><time datetime="{{ file['uploaded_at'] }}">{{ file['uploaded_at'] }}</time></div>
+      </div>
+      <div>
+        <div class="label">Content-Type</div>
+        <div class="monospace">{{ file['content_type'] or 'unknown' }}</div>
+      </div>
+      <div>
+        <div class="label">SHA-256</div>
+        <div class="monospace small break">{{ file['sha256'] }}</div>
+      </div>
+      <div>
+        <div class="label">MD5</div>
+        <div class="monospace small break">{{ file['md5'] }}</div>
+      </div>
+      <div>
+        <div class="label">Downloads</div>
+        <div>{{ file['download_count'] }}</div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <a class="button" href="{{ url_for('download', file_id=file['id']) }}">Download</a>
+      <a class="button secondary" href="{{ url_for('raw', file_id=file['id']) }}" target="_blank">Open Raw</a>
+      <a class="button link" href="{{ url_for('index') }}">Back</a>
+      {% if is_admin %}
+      <form action="{{ url_for('delete_file', file_id=file['id']) }}" method="post" style="display:inline" data-confirm="Delete this file? This cannot be undone.">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}" />
+        <button type="submit" class="button danger">Delete</button>
+      </form>
+      {% endif %}
+    </div>
+  </section>
+
+  {% if is_image %}
+    <section class="card">
+      <h3>Preview</h3>
+      <img src="{{ url_for('raw', file_id=file['id']) }}" alt="preview" class="preview" />
+    </section>
+  {% elif is_text %}
+    <section class="card">
+      <h3>Preview</h3>
+      <iframe class="preview" src="{{ url_for('raw', file_id=file['id']) }}"></iframe>
+    </section>
+  {% elif is_audio %}
+    <section class="card">
+      <h3>Preview</h3>
+      <audio class="media" controls src="{{ url_for('raw', file_id=file['id']) }}"></audio>
+    </section>
+  {% elif is_video %}
+    <section class="card">
+      <h3>Preview</h3>
+      <video class="media" controls src="{{ url_for('raw', file_id=file['id']) }}"></video>
+    </section>
+  {% endif %}
+{% endblock %}
