@@ -1,0 +1,14 @@
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+exclude = "(\.venv|build|dist|migrations|node_modules)"
+
+[tool.isort]
+profile = "black"
+line_length = 100
+known_first_party = ["guestvault"]
+
+[tool.flake8]
+max-line-length = 100
+extend-ignore = ["E203", "W503"]
+exclude = [".git", "__pycache__", ".venv", "build", "dist", "node_modules"]
