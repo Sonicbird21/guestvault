@@ -1,4 +1,4 @@
--r requirements.txt
+# Production WSGI server (Linux/macOS)
 gunicorn==21.2.0
-# Alternatively on Windows or if preferred
-waitress==2.1.2
+# For Windows environments install waitress separately if needed:
+# pip install waitress==2.1.2
