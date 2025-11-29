@@ -3,7 +3,10 @@
   <section class="card">
     <h2>Upload a File</h2>
     <form id="uploadForm" action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data">
-      <input type="file" id="fileInput" name="file" required />
+      <div style="display:flex; gap:8px; align-items:center;">
+        <input type="file" id="fileInput" name="file" required />
+        <input type="text" id="passwordInput" name="password" placeholder="Password (optional)" class="text-input compact" />
+      </div>
       <div class="actions" style="margin-top:10px;">
         <button type="submit" id="uploadBtn">Upload</button>
         <button type="button" id="cancelBtn" class="button secondary" style="display:none;">Cancel</button>
@@ -55,6 +58,9 @@
                 </div>
               {% endif %}
               <div>
+                {% if f['encrypted'] %}
+                  <span class="icon-lock" title="Encrypted" aria-label="Encrypted">🔒</span>
+                {% endif %}
                 <a href="{{ url_for('file_detail', file_id=f['id']) }}">{{ f['filename_original'] }}</a>
               </div>
               <div>{{ f['size'] | human_size }}</div>

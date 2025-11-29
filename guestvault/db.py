@@ -24,12 +24,19 @@ def init_db() -> None:
                 size INTEGER NOT NULL,
                 sha256 TEXT NOT NULL,
                 md5 TEXT,
+                encrypted INTEGER NOT NULL DEFAULT 0,
                 uploaded_at TEXT NOT NULL,
                 download_count INTEGER NOT NULL DEFAULT 0
             )
             """
         )
         conn.execute("CREATE INDEX IF NOT EXISTS idx_files_sha256 ON files(sha256)")
+        # Backfill/ensure the 'encrypted' column exists for older databases
+        try:
+            conn.execute("ALTER TABLE files ADD COLUMN encrypted INTEGER NOT NULL DEFAULT 0")
+        except Exception:
+            # Column likely already exists; ignore
+            pass
         conn.commit()
     finally:
         conn.close()
@@ -41,8 +48,8 @@ def insert_file_record(meta: dict) -> int:
         cur = conn.execute(
             """
             INSERT INTO files (
-                filename_original, stored_relpath, content_type, size, sha256, md5, uploaded_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                filename_original, stored_relpath, content_type, size, sha256, md5, encrypted, uploaded_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 meta["filename_original"],
@@ -51,6 +58,7 @@ def insert_file_record(meta: dict) -> int:
                 meta["size"],
                 meta["sha256"],
                 meta.get("md5"),
+                1 if meta.get("encrypted") else 0,
                 meta["uploaded_at"],
             ),
         )

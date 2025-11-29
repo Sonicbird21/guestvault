@@ -2,6 +2,7 @@
   const form = document.getElementById('uploadForm');
   if (!form) return;
   const fileInput = document.getElementById('fileInput');
+  const passwordInput = document.getElementById('passwordInput');
   const uploadBtn = document.getElementById('uploadBtn');
   const cancelBtn = document.getElementById('cancelBtn');
   const progressContainer = document.getElementById('progressContainer');
@@ -31,6 +32,8 @@
     if (!fileInput.files || fileInput.files.length === 0) resetUI();
   });
 
+  // No show/hide button per design
+
   function fmtBytes(bytes) {
     const units = ['B','KB','MB','GB','TB'];
     let size = bytes;
@@ -55,13 +58,64 @@
     }
   });
 
-  form.addEventListener('submit', (e) => {
+  async function deriveKeyFromPassword(password, salt) {
+    const enc = new TextEncoder();
+    const passKey = await crypto.subtle.importKey(
+      'raw', enc.encode(password), { name: 'PBKDF2' }, false, ['deriveKey']
+    );
+    return crypto.subtle.deriveKey(
+      { name: 'PBKDF2', salt, iterations: 120000, hash: 'SHA-256' },
+      passKey,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt']
+    );
+  }
+
+  async function encryptFileBlob(file) {
+    const password = (passwordInput && passwordInput.value) || '';
+    if (!password) return null; // No encryption requested
+    const arrayBuf = await file.arrayBuffer();
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const key = await deriveKeyFromPassword(password, salt);
+    const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, arrayBuf);
+    const meta = {
+      v: 1,
+      alg: 'AES-GCM',
+      kdf: 'PBKDF2-SHA256-120k',
+      salt: Array.from(salt),
+      iv: Array.from(iv),
+      filename: file.name,
+      type: file.type || 'application/octet-stream',
+      size: file.size
+    };
+    const header = new TextEncoder().encode(JSON.stringify(meta));
+    const delim = new TextEncoder().encode('\n\n--GV--\n\n');
+    const combined = new Blob([header, delim, new Uint8Array(ciphertext)], { type: 'application/octet-stream' });
+    return { blob: combined, encrypted: true };
+  }
+
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     if (!fileInput.files.length) return;
     const file = fileInput.files[0];
     xhr = new XMLHttpRequest();
     const data = new FormData();
-    data.append('file', file);
+    let encryptedPayload = null;
+    try {
+      encryptedPayload = await encryptFileBlob(file);
+    } catch (err) {
+      progressStats.textContent = 'Encryption failed: ' + (err && err.message ? err.message : String(err));
+      return;
+    }
+    if (encryptedPayload && encryptedPayload.encrypted) {
+      data.append('file', encryptedPayload.blob, file.name + '.enc');
+      data.append('encrypted', '1');
+    } else {
+      data.append('file', file);
+      data.append('encrypted', '0');
+    }
     startTime = performance.now();
     progressContainer.style.display = 'block';
     cancelBtn.style.display = 'inline-block';

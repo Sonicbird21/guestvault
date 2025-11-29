@@ -57,8 +57,23 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 .row > div:first-child input[type="checkbox"] { transform: scale(1.1); }
 
 input[type="file"] {
-  padding: 8px; background: #0e121a; border: 1px solid var(--border); border-radius: 8px; color: var(--text);
+  padding: 8px 10px; background: #0e121a; border: 1px solid var(--border); border-radius: 8px; color: var(--text); font: inherit;
 }
+
+/* Compact text inputs to match site style */
+.text-input {
+  padding: 8px 10px;
+  background: #0e121a; /* match file input */
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font: inherit;
+  line-height: 1.2;
+  outline: none;
+}
+.text-input.compact { max-width: 220px; }
+.text-input:focus { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(90,169,255,.15); }
+.text-input::placeholder { color: var(--muted); }
 
 .button, button { display: inline-block; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--accent); color: white; background: #10233a; text-decoration: none; cursor: pointer; }
 .button:hover, button:hover { filter: brightness(1.1); }
@@ -79,6 +94,9 @@ h2 { overflow-wrap: anywhere; }
 
 .preview { width: 100%; max-height: 70vh; border: 1px solid var(--border); border-radius: 8px; }
 .media { width: 100%; }
+
+/* Small lock icon for encrypted files */
+.icon-lock { display: inline-block; margin-right: 6px; font-size: 0.95em; vertical-align: middle; color: var(--muted); }
 
 footer { color: var(--muted); font-size: 0.9em; }
 

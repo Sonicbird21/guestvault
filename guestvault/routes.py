@@ -102,6 +102,12 @@ def init_app(app: Flask) -> None:
             abort(400, description="No selected file")
         filename = secure_filename(file.filename)
         meta, _abs_path = store_file(file, filename)
+        # Optional client-side encryption marker
+        try:
+            enc_flag = request.form.get("encrypted", "0")
+            meta["encrypted"] = True if str(enc_flag) == "1" else False
+        except Exception:
+            meta["encrypted"] = False
         file_id = insert_file_record(meta)
         return redirect(url_for("file_detail", file_id=file_id))
 
