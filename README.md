@@ -1,5 +1,3 @@
-# guestvault
-
 guestvault - an anonymous file upload hosting service
 =======
 
