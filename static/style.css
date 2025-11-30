@@ -59,6 +59,18 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 input[type="file"] {
   padding: 8px 10px; background: #0e121a; border: 1px solid var(--border); border-radius: 8px; color: var(--text); font: inherit;
 }
+/* Keep native focus style for file input */
+.text-input {
+  padding: 8px 10px;
+  background: #0e121a;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font: inherit;
+  line-height: 1.2;
+  outline: none;
+  height: 36px; /* match visual height of file input */
+}
 
 /* Compact text inputs to match site style */
 .text-input {
@@ -72,7 +84,7 @@ input[type="file"] {
   outline: none;
 }
 .text-input.compact { max-width: 220px; }
-.text-input:focus { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(90,169,255,.15); }
+.text-input:focus { border-color: var(--border); box-shadow: none; }
 .text-input::placeholder { color: var(--muted); }
 select.text-input { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 18px) center, calc(100% - 12px) center; background-size: 6px 6px, 6px 6px; background-repeat: no-repeat; padding-right: 30px; }
 select.text-input:focus { background-image: linear-gradient(45deg, transparent 50%, var(--accent) 50%), linear-gradient(135deg, var(--accent) 50%, transparent 50%); }
@@ -81,6 +93,14 @@ select.text-input:focus { background-image: linear-gradient(45deg, transparent 5
 .button:hover, button:hover { filter: brightness(1.1); }
 .button.secondary { border-color: var(--accent-2); background: #113016; }
 .button.link { border-color: transparent; background: transparent; color: var(--accent); }
+/* Tweak header admin action to better fit site's style */
+.admin-actions .button.link {
+  border-color: var(--border);
+  background: #0e121a;
+  color: var(--text);
+  padding: 6px 12px;
+}
+.admin-actions .button.link:hover { filter: brightness(1.05); }
 .button.danger { border-color: #ef5350; background: #3a1010; }
 
 .muted { color: var(--muted); }

@@ -4,6 +4,17 @@
   const statusEl = document.getElementById('decryptStatus');
   const previewEl = document.getElementById('decryptPreview');
   if (!btn || !pwdInput) return;
+  
+    // Pre-fill password from URL query (?pwd=...)
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const qp = params.get('pwd');
+      if (qp) {
+        pwdInput.value = qp;
+      }
+    } catch (e) {
+      // ignore
+    }
 
   function setStatus(msg) {
     if (statusEl) statusEl.textContent = msg || '';
