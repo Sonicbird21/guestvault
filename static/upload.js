@@ -2,7 +2,10 @@
   const form = document.getElementById('uploadForm');
   if (!form) return;
   const fileInput = document.getElementById('fileInput');
+  const fileInputWrapper = document.getElementById('fileInputWrapper');
+  const fileNameEl = fileInputWrapper ? fileInputWrapper.querySelector('.file-name') : null;
   const passwordInput = document.getElementById('passwordInput');
+  const anonToggle = document.getElementById('anonToggle');
   const uploadBtn = document.getElementById('uploadBtn');
   const cancelBtn = document.getElementById('cancelBtn');
   const progressContainer = document.getElementById('progressContainer');
@@ -20,6 +23,7 @@
       progressStats.textContent = '';
       uploadBtn.disabled = false;
       fileInput.disabled = false;
+      if (fileNameEl) fileNameEl.textContent = fileNameEl.getAttribute('data-placeholder') || 'No file selected.';
     } catch (e) { /* noop */ }
   }
 
@@ -29,7 +33,11 @@
     if (e.persisted) resetUI();
   });
   fileInput.addEventListener('change', () => {
-    if (!fileInput.files || fileInput.files.length === 0) resetUI();
+    if (!fileInput.files || fileInput.files.length === 0) {
+      resetUI();
+    } else if (fileNameEl) {
+      fileNameEl.textContent = fileInput.files[0].name;
+    }
   });
 
   // No show/hide button per design
@@ -110,6 +118,12 @@
     } else {
       data.append('file', file);
       data.append('encrypted', '0');
+    }
+    // Anonymize filename flag
+    if (anonToggle && anonToggle.checked) {
+      data.append('anonymize', '1');
+    } else {
+      data.append('anonymize', '0');
     }
     startTime = performance.now();
     progressContainer.style.display = 'block';

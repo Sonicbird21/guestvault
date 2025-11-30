@@ -6,6 +6,8 @@
   --accent: #5aa9ff;
   --accent-2: #8bc34a;
   --border: #222635;
+  /* Darker accent tone for subtle UI states */
+  --accent-dark: #2a4a70;
 }
 
 * { box-sizing: border-box; }
@@ -37,29 +39,90 @@ header { display: flex; align-items: center; justify-content: space-between; gap
 .chk-col { display: flex; align-items: center; justify-content: center; }
 
 /* Custom checkbox */
-.chk { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; }
-.chk input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-.chk span { width: 18px; height: 18px; border-radius: 4px; border: 1px solid var(--border); background: #0e121a; display: inline-block; position: relative; }
-/* Checked state: accent background + visible tick */
-.chk input:checked + span { background: #10233a; border-color: var(--accent); box-shadow: 0 0 0 1px rgba(90,169,255,.35) inset; }
-.chk input:checked + span::after {
+.chk { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; }
+.chk input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; margin: 0; }
+.chk span { width: 20px; height: 20px; border-radius: 6px; border: 1px solid var(--border); background: #0e121a; display: inline-block; position: relative; transition: background .18s ease, border-color .18s ease, box-shadow .18s ease; }
+.chk:hover span { border-color: #2c3347; }
+/* Check glyph using SVG mask for crisp edges */
+.chk span::after {
   content: "";
   position: absolute;
-  left: 50%; top: 50%;
-  width: 10px; height: 6px;
-  transform: translate(-50%, -65%) rotate(-45deg);
-  border-left: 2px solid var(--accent);
-  border-bottom: 2px solid var(--accent);
+  inset: 0;
+  margin: auto;
+  width: 12px; height: 12px;
+  background-color: #ffffff;
+  -webkit-mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'><path d='M5 10.5l3 3 7-7' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/></svg>") center / contain no-repeat;
+          mask: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'><path d='M5 10.5l3 3 7-7' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/></svg>") center / contain no-repeat;
+  transform: scale(.6);
+  opacity: 0;
+  transition: transform .2s ease, opacity .2s ease;
 }
-.chk input:focus + span { outline: 2px solid #2a4a70; outline-offset: 2px; }
+/* Checked: accent fill, visible check */
+.chk input:checked + span { background: linear-gradient(180deg, #10233a, #1a3558); border-color: var(--accent-dark); box-shadow: inset 0 0 0 1px rgba(0,0,0,.08); }
+.chk input:checked + span::after { opacity: 1; transform: scale(1); }
+/* Focus ring for keyboard users */
+.chk input:focus-visible + span { box-shadow: 0 0 0 3px rgba(42,74,112,.45); }
+/* Disabled state */
+.chk input:disabled + span { opacity: .5; cursor: not-allowed; }
+@media (prefers-reduced-motion: reduce) {
+  .chk span, .chk span::after { transition: none; }
+}
 
 /* Slightly narrower first column when admin checkbox present */
-.row > div:first-child input[type="checkbox"] { transform: scale(1.1); }
+.row > div:first-child input[type="checkbox"] { transform: none; }
 
-input[type="file"] {
-  padding: 8px 10px; background: #0e121a; border: 1px solid var(--border); border-radius: 8px; color: var(--text); font: inherit;
+/* Custom file input: wrapper matches .text-input look */
+.file-input {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  background: #0e121a;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font: inherit;
+  height: 36px; /* match .text-input */
+  cursor: pointer;
 }
-/* Keep native focus style for file input */
+.file-input:hover { border-color: #2c3347; }
+/* Visually hidden but accessible input */
+.file-input input[type="file"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+/* Keep focus style consistent with text inputs (neutral) */
+.file-input:focus-within { border-color: var(--border); box-shadow: none; outline: none; }
+
+.file-button {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #2c3347; /* slightly lighter than --border for contrast */
+  background: #141a24; /* slightly lighter than input background for visibility */
+  color: var(--text);
+  line-height: 1;
+}
+.file-button:hover { border-color: #2c3347; filter: brightness(1.04); }
+.file-button:active { filter: brightness(0.98); }
+.file-name {
+  color: var(--text);
+  opacity: 0.9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 46ch;
+}
+
+/* Disabled while uploading */
+.uploading #fileInputWrapper { opacity: .6; pointer-events: none; }
 .text-input {
   padding: 8px 10px;
   background: #0e121a;
@@ -117,6 +180,10 @@ select.text-input:focus { background-image: linear-gradient(45deg, transparent 5
 .break { overflow-wrap: anywhere; word-break: break-word; }
 h2 { overflow-wrap: anywhere; }
 
+/* Inline checkbox + label alignment */
+.chk-label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+.chk-label .chk { top: 0; }
+
 .meta-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
 .label { color: var(--muted); font-size: 0.85em; margin-bottom: 4px; }
 
@@ -124,6 +191,19 @@ h2 { overflow-wrap: anywhere; }
 
 .preview { width: 100%; max-height: 70vh; border: 1px solid var(--border); border-radius: 8px; }
 .media { width: 100%; }
+
+/* Readable code/text preview for JSON and similar */
+.code-preview {
+  width: 100%;
+  max-height: 70vh;
+  padding: 12px 14px;
+  background: #0e121a;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: auto;
+  white-space: pre;
+}
 
 /* Small lock icon for encrypted files */
 .icon-lock { display: inline-block; margin-right: 6px; font-size: 0.95em; vertical-align: middle; color: var(--muted); }

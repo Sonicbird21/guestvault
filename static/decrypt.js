@@ -176,11 +176,39 @@
       img.className = 'preview';
       img.src = url;
       previewEl.appendChild(img);
-    } else if (type.startsWith('text/') || type === 'application/json' || type === 'application/xml') {
-      const iframe = document.createElement('iframe');
-      iframe.className = 'preview';
-      iframe.src = url;
-      previewEl.appendChild(iframe);
+    } else if (type === 'application/json') {
+      try {
+        const rawText = new TextDecoder().decode(new Uint8Array(plaintext));
+        let pretty;
+        try {
+          const obj = JSON.parse(rawText);
+          pretty = JSON.stringify(obj, null, 2);
+        } catch {
+          pretty = rawText; // not valid JSON? show as-is
+        }
+        const pre = document.createElement('pre');
+        pre.className = 'code-preview monospace';
+        pre.textContent = pretty;
+        previewEl.appendChild(pre);
+      } catch (e) {
+        const fallback = document.createElement('div');
+        fallback.className = 'muted small';
+        fallback.textContent = 'Failed to render JSON preview.';
+        previewEl.appendChild(fallback);
+      }
+    } else if (type.startsWith('text/') || type === 'application/xml') {
+      try {
+        const rawText = new TextDecoder().decode(new Uint8Array(plaintext));
+        const pre = document.createElement('pre');
+        pre.className = 'code-preview monospace';
+        pre.textContent = rawText;
+        previewEl.appendChild(pre);
+      } catch (e) {
+        const iframe = document.createElement('iframe');
+        iframe.className = 'preview';
+        iframe.src = url;
+        previewEl.appendChild(iframe);
+      }
     } else if (type.startsWith('audio/')) {
       const audio = document.createElement('audio');
       audio.className = 'media';

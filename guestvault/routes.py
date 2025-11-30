@@ -63,7 +63,8 @@ def set_security_headers(response):
 def set_raw_sandbox_headers(response):
     response.headers["Content-Security-Policy"] = "sandbox"
     response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["X-Frame-Options"] = "DENY"
+    # Allow embedding raw content in same-origin iframes for previews
+    response.headers["X-Frame-Options"] = "SAMEORIGIN"
     response.headers["Referrer-Policy"] = "no-referrer"
     return response
 
@@ -108,6 +109,16 @@ def init_app(app: Flask) -> None:
             meta["encrypted"] = True if str(enc_flag) == "1" else False
         except Exception:
             meta["encrypted"] = False
+        # Optional anonymize filename: replace displayed original filename with md5 hash to avoid duplicates (keep extension)
+        try:
+            anon_flag = request.form.get("anonymize", "0")
+            if str(anon_flag) == "1":
+                import os as _os
+            _root, _ext = _os.path.splitext(meta.get("filename_original") or filename)
+            _md5 = meta.get("md5") or "file"
+            meta["filename_original"] = f"{_md5}{_ext}" if _ext else _md5
+        except Exception:
+            pass
         file_id = insert_file_record(meta)
         return redirect(url_for("file_detail", file_id=file_id))
 
@@ -119,6 +130,7 @@ def init_app(app: Flask) -> None:
         ct = row["content_type"] or "application/octet-stream"
         is_image = ct.startswith("image/")
         is_text = ct.startswith("text/") or ct in ("application/json", "application/xml")
+        is_json = ct == "application/json"
         is_audio = ct.startswith("audio/")
         is_video = ct.startswith("video/")
         return render_template(
@@ -126,6 +138,7 @@ def init_app(app: Flask) -> None:
             file=row,
             is_image=is_image,
             is_text=is_text,
+            is_json=is_json,
             is_audio=is_audio,
             is_video=is_video,
         )

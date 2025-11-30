@@ -4,8 +4,19 @@
     <h2>Upload a File</h2>
     <form id="uploadForm" action="{{ url_for('upload') }}" method="post" enctype="multipart/form-data">
       <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-        <input type="file" id="fileInput" name="file" required />
+        <label class="file-input" id="fileInputWrapper">
+          <input type="file" id="fileInput" name="file" required />
+          <span class="file-button">Browse…</span>
+          <span class="file-name" data-placeholder="No file selected.">No file selected.</span>
+        </label>
         <input type="text" id="passwordInput" name="password" placeholder="Password (optional)" class="text-input compact" />
+        <label class="chk-label" title="Replace the displayed filename with a generic one">
+          <span class="chk">
+            <input type="checkbox" id="anonToggle" />
+            <span></span>
+          </span>
+          <span class="small muted">Anonymize filename</span>
+        </label>
       </div>
       <div class="actions" style="margin-top:10px;">
         <button type="submit" id="uploadBtn">Upload</button>
@@ -33,7 +44,13 @@
           </div>
           <div class="muted small">
             {% if is_admin %}
-              <label style="cursor:pointer"><input type="checkbox" id="selectAll" /> Select all</label>
+              <label class="chk-label" title="Select all">
+                <span class="chk">
+                  <input type="checkbox" id="selectAll" />
+                  <span></span>
+                </span>
+                <span>Select all</span>
+              </label>
             {% endif %}
           </div>
         </div>

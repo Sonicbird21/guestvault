@@ -72,7 +72,11 @@
   {% elif is_text %}
     <section class="card">
       <h3>Preview</h3>
-      <iframe class="preview" src="{{ url_for('raw', file_id=file['id']) }}"></iframe>
+      {% if is_json %}
+        <pre class="code-preview monospace" id="jsonPreview" data-raw="{{ url_for('raw', file_id=file['id']) }}"></pre>
+      {% else %}
+        <iframe class="preview" src="{{ url_for('raw', file_id=file['id']) }}"></iframe>
+      {% endif %}
     </section>
   {% elif is_audio %}
     <section class="card">
