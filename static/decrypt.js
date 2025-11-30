@@ -63,6 +63,12 @@
     previewEl.innerHTML = '';
     const password = pwdInput.value || '';
     if (!password) { setStatus('Please enter a password.'); return; }
+    // Reset download button state at start of every attempt
+    const dlBtnInit = document.getElementById('downloadDecryptedBtn');
+    if (dlBtnInit) {
+      dlBtnInit.disabled = true;
+      dlBtnInit.setAttribute('aria-disabled', 'true');
+    }
     setStatus('Downloading…');
     const rawUrl = btn.getAttribute('data-raw');
     const resp = await fetch(rawUrl, { cache: 'no-store' });
@@ -115,6 +121,10 @@
       key = await deriveKey(password, salt, kdf, iterations);
     } catch (e) {
       setStatus('Key derivation failed');
+      if (dlBtnInit) {
+        dlBtnInit.disabled = true;
+        dlBtnInit.setAttribute('aria-disabled', 'true');
+      }
       return;
     }
 
@@ -124,12 +134,41 @@
       plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, cipherBytes);
     } catch (e) {
       setStatus('Decryption failed. Wrong password?');
+      if (dlBtnInit) {
+        dlBtnInit.disabled = true;
+        dlBtnInit.setAttribute('aria-disabled', 'true');
+      }
       return;
     }
 
     const type = header.type || 'application/octet-stream';
     const blob = new Blob([new Uint8Array(plaintext)], { type });
     const url = URL.createObjectURL(blob);
+    // Enable download button
+    const dlBtn = document.getElementById('downloadDecryptedBtn');
+    if (dlBtn) {
+      dlBtn.disabled = false;
+      dlBtn.setAttribute('aria-disabled', 'false');
+      dlBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        try {
+          const safeName = (header.filename || 'decrypted').replace(/[^A-Za-z0-9._-]/g, '_');
+          const a = document.createElement('a');
+          a.href = url;
+          a.setAttribute('download', safeName);
+          // Use a temp container to avoid modifying body directly
+          const container = document.createElement('div');
+          container.style.position = 'fixed';
+          container.style.top = '-1000px';
+          container.appendChild(a);
+          document.documentElement.appendChild(container);
+          a.click();
+          container.remove();
+        } catch (err) {
+          setStatus('Download failed');
+        }
+      }, { once: true });
+    }
 
     // Render preview based on type
     if (type.startsWith('image/')) {
@@ -155,14 +194,14 @@
       video.src = url;
       previewEl.appendChild(video);
     } else {
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = header.filename || 'decrypted';
-      a.textContent = 'Download decrypted file';
-      previewEl.appendChild(a);
+      // Non-previewable type: do not render any inline preview text
     }
 
-    setStatus('Decrypted. Preview ready.');
+    if (type.startsWith('image/') || type.startsWith('text/') || type === 'application/json' || type === 'application/xml' || type.startsWith('audio/') || type.startsWith('video/')) {
+      setStatus('Decrypted. Preview ready.');
+    } else {
+      setStatus('Decrypted.');
+    }
   }
 
   btn.addEventListener('click', (e) => {

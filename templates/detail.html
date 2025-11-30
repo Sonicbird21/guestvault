@@ -48,9 +48,10 @@
   {% if file['encrypted'] %}
     <section class="card">
       <h3>Encrypted File</h3>
-      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;" id="decryptControls">
         <input type="text" id="decryptPassword" placeholder="Password" class="text-input compact" />
         <button id="decryptBtn" class="button" data-raw="{{ url_for('raw', file_id=file['id']) }}">Decrypt</button>
+        <button id="downloadDecryptedBtn" class="button secondary" disabled aria-disabled="true">Download</button>
         {% if file['size'] and file['size'] > 52428800 %}
           <span class="inline-warning" title="May take longer">
             <span class="icon-warn" aria-hidden="true">⚠️</span>

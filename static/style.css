@@ -93,6 +93,14 @@ select.text-input:focus { background-image: linear-gradient(45deg, transparent 5
 .button:hover, button:hover { filter: brightness(1.1); }
 .button.secondary { border-color: var(--accent-2); background: #113016; }
 .button.link { border-color: transparent; background: transparent; color: var(--accent); }
+/* Disabled button state */
+.button:disabled, button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  filter: none;
+}
+/* Specific secondary disabled tint */
+.button.secondary:disabled { background: #1a2d18; border-color: #2d4724; }
 /* Tweak header admin action to better fit site's style */
 .admin-actions .button.link {
   border-color: var(--border);
