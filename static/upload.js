@@ -74,7 +74,7 @@
     return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations, hash: 'SHA-256' }, passKey, { name: 'AES-GCM', length: 256 }, false, ['encrypt']);
   }
 
-  async function encryptFileBlob(file) {
+  async function encryptFileBlob(file, anonymize) {
     const password = (passwordInput && passwordInput.value) || '';
     if (!password) return null; // No encryption requested
     const arrayBuf = await file.arrayBuffer();
@@ -89,10 +89,13 @@
       iterations: DEFAULT_ITERATIONS,
       salt: Array.from(salt),
       iv: Array.from(iv),
-      filename: file.name,
       type: file.type || 'application/octet-stream',
       size: file.size
     };
+    // Avoid leaking original filename in encrypted header when anonymize is enabled
+    if (!anonymize) {
+      meta.filename = file.name;
+    }
     const header = new TextEncoder().encode(JSON.stringify(meta));
     const delim = new TextEncoder().encode('\n\n--GV--\n\n');
     const combined = new Blob([header, delim, new Uint8Array(ciphertext)], { type: 'application/octet-stream' });
@@ -107,7 +110,8 @@
     const data = new FormData();
     let encryptedPayload = null;
     try {
-      encryptedPayload = await encryptFileBlob(file);
+      const anonymizeSelected = !!(anonToggle && anonToggle.checked);
+      encryptedPayload = await encryptFileBlob(file, anonymizeSelected);
     } catch (err) {
       progressStats.textContent = 'Encryption failed: ' + (err && err.message ? err.message : String(err));
       return;
