@@ -74,6 +74,8 @@ input[type="file"] {
 .text-input.compact { max-width: 220px; }
 .text-input:focus { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(90,169,255,.15); }
 .text-input::placeholder { color: var(--muted); }
+select.text-input { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 18px) center, calc(100% - 12px) center; background-size: 6px 6px, 6px 6px; background-repeat: no-repeat; padding-right: 30px; }
+select.text-input:focus { background-image: linear-gradient(45deg, transparent 50%, var(--accent) 50%), linear-gradient(135deg, var(--accent) 50%, transparent 50%); }
 
 .button, button { display: inline-block; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--accent); color: white; background: #10233a; text-decoration: none; cursor: pointer; }
 .button:hover, button:hover { filter: brightness(1.1); }
@@ -97,6 +99,10 @@ h2 { overflow-wrap: anywhere; }
 
 /* Small lock icon for encrypted files */
 .icon-lock { display: inline-block; margin-right: 6px; font-size: 0.95em; vertical-align: middle; color: var(--muted); }
+
+/* Inline warning next to decrypt button */
+.inline-warning { display: inline-flex; align-items: center; gap: 6px; margin-left: 16px; color: var(--muted); opacity: 0.7; font-size: 0.85em; }
+.inline-warning .icon-warn { font-size: 0.95em; opacity: 0.8; }
 
 footer { color: var(--muted); font-size: 0.9em; }
 

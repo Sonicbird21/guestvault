@@ -58,18 +58,12 @@
     }
   });
 
-  async function deriveKeyFromPassword(password, salt) {
+  const DEFAULT_ITERATIONS = 120000; // strong by default
+
+  async function deriveKeyFromPassword(password, salt, iterations) {
     const enc = new TextEncoder();
-    const passKey = await crypto.subtle.importKey(
-      'raw', enc.encode(password), { name: 'PBKDF2' }, false, ['deriveKey']
-    );
-    return crypto.subtle.deriveKey(
-      { name: 'PBKDF2', salt, iterations: 120000, hash: 'SHA-256' },
-      passKey,
-      { name: 'AES-GCM', length: 256 },
-      false,
-      ['encrypt']
-    );
+    const passKey = await crypto.subtle.importKey('raw', enc.encode(password), { name: 'PBKDF2' }, false, ['deriveKey']);
+    return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations, hash: 'SHA-256' }, passKey, { name: 'AES-GCM', length: 256 }, false, ['encrypt']);
   }
 
   async function encryptFileBlob(file) {
@@ -78,12 +72,13 @@
     const arrayBuf = await file.arrayBuffer();
     const salt = crypto.getRandomValues(new Uint8Array(16));
     const iv = crypto.getRandomValues(new Uint8Array(12));
-    const key = await deriveKeyFromPassword(password, salt);
+    const key = await deriveKeyFromPassword(password, salt, DEFAULT_ITERATIONS);
     const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, arrayBuf);
     const meta = {
       v: 1,
       alg: 'AES-GCM',
-      kdf: 'PBKDF2-SHA256-120k',
+      kdf: 'PBKDF2-SHA256',
+      iterations: DEFAULT_ITERATIONS,
       salt: Array.from(salt),
       iv: Array.from(iv),
       filename: file.name,

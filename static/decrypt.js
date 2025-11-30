@@ -9,16 +9,15 @@
     if (statusEl) statusEl.textContent = msg || '';
   }
 
-  async function deriveKey(password, salt) {
+  async function deriveKey(password, salt, kdf, iterations) {
     const enc = new TextEncoder();
+    if (kdf === 'SHA256') {
+      const data = new Uint8Array([...salt, ...enc.encode(password)]);
+      const digest = await crypto.subtle.digest('SHA-256', data);
+      return crypto.subtle.importKey('raw', digest, { name: 'AES-GCM' }, false, ['decrypt']);
+    }
     const passKey = await crypto.subtle.importKey('raw', enc.encode(password), { name: 'PBKDF2' }, false, ['deriveKey']);
-    return crypto.subtle.deriveKey(
-      { name: 'PBKDF2', salt, iterations: 120000, hash: 'SHA-256' },
-      passKey,
-      { name: 'AES-GCM', length: 256 },
-      false,
-      ['decrypt']
-    );
+    return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations, hash: 'SHA-256' }, passKey, { name: 'AES-GCM', length: 256 }, false, ['decrypt']);
   }
 
   function splitEnvelope(buf) {
@@ -53,11 +52,39 @@
     previewEl.innerHTML = '';
     const password = pwdInput.value || '';
     if (!password) { setStatus('Please enter a password.'); return; }
-    setStatus('Fetching…');
+    setStatus('Downloading…');
     const rawUrl = btn.getAttribute('data-raw');
     const resp = await fetch(rawUrl, { cache: 'no-store' });
     if (!resp.ok) { setStatus('Fetch failed: ' + resp.status); return; }
-    const buf = await resp.arrayBuffer();
+    let buf;
+    try {
+      const contentLength = resp.headers.get('Content-Length');
+      if (resp.body && contentLength) {
+        const total = parseInt(contentLength, 10) || 0;
+        const reader = resp.body.getReader();
+        const chunks = [];
+        let received = 0;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          chunks.push(value);
+          received += value.length;
+          if (total > 0) {
+            const pct = ((received / total) * 100).toFixed(1);
+            setStatus(`Downloading… ${pct}%`);
+          }
+        }
+        const merged = new Uint8Array(received);
+        let offset = 0;
+        for (const c of chunks) { merged.set(c, offset); offset += c.length; }
+        buf = merged.buffer;
+      } else {
+        buf = await resp.arrayBuffer();
+      }
+    } catch (e) {
+      setStatus('Download failed: ' + e.message);
+      return;
+    }
 
     let headerBytes, cipherBytes, header;
     try {
@@ -70,9 +97,11 @@
 
     const salt = new Uint8Array(header.salt);
     const iv = new Uint8Array(header.iv);
+    const iterations = header.iterations || 120000;
+    const kdf = header.kdf === 'SHA256' ? 'SHA256' : 'PBKDF2';
     let key;
     try {
-      key = await deriveKey(password, salt);
+      key = await deriveKey(password, salt, kdf, iterations);
     } catch (e) {
       setStatus('Key derivation failed');
       return;
